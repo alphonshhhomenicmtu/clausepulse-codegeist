@@ -11,15 +11,114 @@ import type {
   VendorContractRecord
 } from '../types.js';
 
+const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const MAX_PAYLOAD_BYTES = 65_536;
+const MAX_CONTRACT_TEXT_LENGTH = 32_768;
+const MAX_IDENTIFIER_LENGTH = 256;
+const MAX_OBJECT_KEYS = 50;
+const MAX_NESTING_DEPTH = 8;
+
+function inspectValueSafety(value: unknown, depth: number, label: string): void {
+  if (depth > MAX_NESTING_DEPTH) {
+    throw new RangeError(`${label} exceeds maximum nesting depth (${MAX_NESTING_DEPTH}).`);
+  }
+  if (typeof value === 'string') {
+    if (value.length > MAX_CONTRACT_TEXT_LENGTH) {
+      throw new RangeError(
+        `${label} exceeds maximum string length (${MAX_CONTRACT_TEXT_LENGTH} characters).`
+      );
+    }
+    return;
+  }
+  if (Array.isArray(value)) {
+    if (value.length > MAX_OBJECT_KEYS) {
+      throw new RangeError(`${label} exceeds maximum array length (${MAX_OBJECT_KEYS}).`);
+    }
+    for (let i = 0; i < value.length; i++) {
+      inspectValueSafety(value[i], depth + 1, `${label}[${i}]`);
+    }
+    return;
+  }
+  if (value !== null && typeof value === 'object') {
+    const ownKeys = Object.getOwnPropertyNames(value);
+    if (ownKeys.length > MAX_OBJECT_KEYS) {
+      throw new RangeError(`${label} exceeds maximum key count (${MAX_OBJECT_KEYS}).`);
+    }
+    for (const key of ownKeys) {
+      if (FORBIDDEN_KEYS.has(key)) {
+        throw new Error(`Forbidden property key "${key}" detected in ${label}.`);
+      }
+      inspectValueSafety((value as Record<string, unknown>)[key], depth + 1, `${label}.${key}`);
+    }
+  }
+}
+
+export function assertSafePlainObject(
+  value: unknown,
+  label = 'input'
+): Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError(`${label} must be a plain JSON object.`);
+  }
+  const proto = Object.getPrototypeOf(value);
+  if (proto !== null && proto !== Object.prototype) {
+    throw new TypeError(`${label} must be a plain JSON object.`);
+  }
+  inspectValueSafety(value, 0, label);
+  let serialized: string;
+  try {
+    serialized = JSON.stringify(value);
+  } catch {
+    throw new TypeError(`${label} must be JSON-serializable.`);
+  }
+  if (serialized.length > MAX_PAYLOAD_BYTES) {
+    throw new RangeError(
+      `${label} exceeds maximum serialized payload size (${MAX_PAYLOAD_BYTES} bytes).`
+    );
+  }
+  return value as Record<string, unknown>;
+}
+
+function assertIsoDateString(value: unknown, fieldName: string): string {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) {
+    throw new RangeError(`${fieldName} must be a valid YYYY-MM-DD ISO date.`);
+  }
+  const normalized = value.trim();
+  const parsed = new Date(`${normalized}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== normalized) {
+    throw new RangeError(`${fieldName} is not a valid calendar date: "${value}".`);
+  }
+  return normalized;
+}
+
 export function handleScoreClauseRisk(input: {
   contractText: string;
   vendorName?: string;
   annualSpendUsd?: number;
 }): ClauseAuditResult {
+  const safe = assertSafePlainObject(input, 'scoreClauseRisk input');
+  if (typeof safe.contractText !== 'string' || safe.contractText.trim().length === 0) {
+    throw new Error('contractText must be a non-empty string.');
+  }
+  if (safe.vendorName !== undefined) {
+    if (typeof safe.vendorName !== 'string' || safe.vendorName.length > MAX_IDENTIFIER_LENGTH) {
+      throw new TypeError(`vendorName must be a string up to ${MAX_IDENTIFIER_LENGTH} characters.`);
+    }
+  }
+  if (safe.annualSpendUsd !== undefined) {
+    if (
+      typeof safe.annualSpendUsd !== 'number' ||
+      !Number.isFinite(safe.annualSpendUsd) ||
+      safe.annualSpendUsd < 0
+    ) {
+      throw new RangeError('annualSpendUsd must be a finite non-negative number.');
+    }
+  }
+
   return auditContractClauses({
-    vendorName: input.vendorName?.trim() || 'Prospective Vendor',
-    contractText: input.contractText,
-    annualSpendUsd: input.annualSpendUsd
+    vendorName: (safe.vendorName as string | undefined)?.trim() || 'Prospective Vendor',
+    contractText: safe.contractText,
+    annualSpendUsd: safe.annualSpendUsd as number | undefined
   });
 }
 
@@ -27,11 +126,26 @@ export function handleCalculateRenewalDeadlines(
   input: { referenceDateIso?: string; horizonDays?: number } = {},
   portfolio: VendorContractRecord[] = DEMO_VENDOR_PORTFOLIO
 ): RenewalPortfolioForecast {
-  return forecastRenewalPortfolio(
-    portfolio,
-    input.referenceDateIso,
-    input.horizonDays ?? 90
-  );
+  const safe = assertSafePlainObject(input, 'calculateRenewalDeadlines input');
+  const referenceDateIso =
+    safe.referenceDateIso !== undefined
+      ? assertIsoDateString(safe.referenceDateIso, 'referenceDateIso')
+      : undefined;
+
+  let horizonDays = 90;
+  if (safe.horizonDays !== undefined) {
+    if (
+      typeof safe.horizonDays !== 'number' ||
+      !Number.isFinite(safe.horizonDays) ||
+      safe.horizonDays < 1 ||
+      safe.horizonDays > 365
+    ) {
+      throw new RangeError('horizonDays must be a finite number between 1 and 365.');
+    }
+    horizonDays = safe.horizonDays;
+  }
+
+  return forecastRenewalPortfolio(portfolio, referenceDateIso, horizonDays);
 }
 
 function buildAdfApprovalBrief(
@@ -100,12 +214,25 @@ export function handleGenerateApprovalBrief(
   input: { vendorId: string; includeRedlines?: boolean },
   portfolio: VendorContractRecord[] = DEMO_VENDOR_PORTFOLIO
 ): ApprovalBriefResult {
-  const record = findVendorById(input.vendorId, portfolio);
-  if (!record) {
-    throw new Error(`Vendor not found in Teamwork Graph: "${input.vendorId}"`);
+  const safe = assertSafePlainObject(input, 'generateApprovalBrief input');
+  if (
+    typeof safe.vendorId !== 'string' ||
+    safe.vendorId.trim().length === 0 ||
+    safe.vendorId.length > MAX_IDENTIFIER_LENGTH
+  ) {
+    throw new TypeError(`vendorId must be a non-empty string up to ${MAX_IDENTIFIER_LENGTH} characters.`);
+  }
+  if (safe.includeRedlines !== undefined && typeof safe.includeRedlines !== 'boolean') {
+    throw new TypeError('includeRedlines must be a boolean.');
   }
 
-  const includeRedlines = input.includeRedlines ?? true;
+  const vendorId = safe.vendorId.trim();
+  const record = findVendorById(vendorId, portfolio);
+  if (!record) {
+    throw new Error(`Vendor not found in Teamwork Graph: "${vendorId}"`);
+  }
+
+  const includeRedlines = (safe.includeRedlines as boolean | undefined) ?? true;
   const audit = auditContractClauses({
     vendorName: record.vendorName,
     contractText: record.contractExcerpt,
@@ -154,13 +281,29 @@ export function handleCompareVendorTerms(
   input: { primaryVendorId: string; secondaryVendorId: string },
   portfolio: VendorContractRecord[] = DEMO_VENDOR_PORTFOLIO
 ): VendorComparisonResult {
-  const primary = findVendorById(input.primaryVendorId, portfolio);
-  const secondary = findVendorById(input.secondaryVendorId, portfolio);
+  const safe = assertSafePlainObject(input, 'compareVendorTerms input');
+  if (
+    typeof safe.primaryVendorId !== 'string' ||
+    safe.primaryVendorId.trim().length === 0 ||
+    safe.primaryVendorId.length > MAX_IDENTIFIER_LENGTH
+  ) {
+    throw new TypeError('primaryVendorId must be a non-empty string.');
+  }
+  if (
+    typeof safe.secondaryVendorId !== 'string' ||
+    safe.secondaryVendorId.trim().length === 0 ||
+    safe.secondaryVendorId.length > MAX_IDENTIFIER_LENGTH
+  ) {
+    throw new TypeError('secondaryVendorId must be a non-empty string.');
+  }
+
+  const primary = findVendorById(safe.primaryVendorId.trim(), portfolio);
+  const secondary = findVendorById(safe.secondaryVendorId.trim(), portfolio);
   if (!primary) {
-    throw new Error(`Primary vendor not found: "${input.primaryVendorId}"`);
+    throw new Error(`Primary vendor not found: "${safe.primaryVendorId}"`);
   }
   if (!secondary) {
-    throw new Error(`Secondary vendor not found: "${input.secondaryVendorId}"`);
+    throw new Error(`Secondary vendor not found: "${safe.secondaryVendorId}"`);
   }
 
   const primaryAudit = auditContractClauses({

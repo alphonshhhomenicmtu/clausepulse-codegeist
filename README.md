@@ -15,7 +15,7 @@ ClausePulse runs **100% deterministically inside Atlassian Forge (`nodejs24.x`)*
 
 ## Architecture
 
-- **`manifest.yml`**: Atlassian Forge `nodejs24.x` manifest declaring `jira:issuePanel`, `rovo:agent`, 4 `rovo:action` modules, `rovo:mcp` (4 typed tools), and scoped permissions.
+- **`manifest.yml`**: Atlassian Forge `nodejs24.x` manifest declaring `jira:issuePanel`, `rovo:agent`, 8 `action` modules (4 Rovo agent actions + 4 MCP tool actions), `rovo:mcp`, and scoped permissions, validated against Atlassian's official `@forge/manifest` schema validator.
 - **`src/contracts/clauseAnalyzer.ts`**: Deterministic commercial contract risk engine scoring auto-renewal traps, uncapped liability, unilateral price-uplift caps, DPA/GDPR/SOC2 compliance gaps, and net-payment term deviations against configurable playbook rules, complete with redline counter-proposals.
 - **`src/contracts/renewalScheduler.ts`**: Exact opt-out notice window and annualized spend exposure calculator (30/60/90-day lock-in buckets and dollars at risk).
 - **`src/graph/vendorGraph.ts`**: Teamwork Graph connector linking `VendorEntity` <-> `ConfluenceContractPage` <-> `JiraApprovalTicket` <-> `RenewalDeadlineNode`, plus a realistic SaaS procurement portfolio fallback.

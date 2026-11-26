@@ -9,7 +9,7 @@ modules:
 
   rovo:agent:
     - key: clausepulse-copilot
-      name: ClausePulse Procurement & Legal Copilot
+      name: ClausePulse Legal Copilot
       description: >
         Contract renewal, clause risk, and vendor procurement approval copilot
         for Legal, Finance, and RevOps teams across Jira Service Management and Confluence.
@@ -37,7 +37,7 @@ modules:
         - generateApprovalBrief
         - compareVendorTerms
 
-  rovo:action:
+  action:
     - key: scoreClauseRisk
       name: Score Contract Clause Risk
       function: clausepulse-rovo-score
@@ -64,7 +64,7 @@ modules:
 
     - key: calculateRenewalDeadlines
       name: Calculate Renewal Deadlines & Exposure
-      function: clausepulse-rovo-renewal
+      function: cp-rovo-renewal
       actionVerb: GET
       description: >
         Computes exact opt-out notice deadlines, lock-in windows (30/60/90 days),
@@ -102,7 +102,7 @@ modules:
 
     - key: compareVendorTerms
       name: Compare Vendor Commercial Terms
-      function: clausepulse-rovo-compare
+      function: cp-rovo-compare
       actionVerb: GET
       description: >
         Compares two vendor contracts or proposals side-by-side on liability cap,
@@ -119,86 +119,106 @@ modules:
           required: true
           description: Challenger or comparison vendor identifier.
 
+    - key: audit_contract_clauses
+      name: Audit Contract Clauses
+      function: clausepulse-mcp-audit
+      actionVerb: GET
+      description: >
+        Audits contract clause text against commercial playbook rules and returns
+        risk score, severity breakdown, policy violations, and redline counter-proposals.
+      inputs:
+        vendorName:
+          title: Vendor Name
+          type: string
+          required: true
+          description: Canonical vendor name.
+        contractText:
+          title: Contract Text
+          type: string
+          required: true
+          description: Raw MSA, DPA, or Order Form clause text to audit.
+        annualSpendUsd:
+          title: Annual Spend (USD)
+          type: number
+          required: false
+          description: Annualized contract spend in USD.
+
+    - key: forecast_renewal_exposure
+      name: Forecast Renewal Exposure
+      function: clausepulse-mcp-renewal
+      actionVerb: GET
+      description: >
+        Calculates opt-out notice deadlines and annualized USD spend at risk
+        within 30, 60, and 90-day auto-renewal lock-in windows.
+      inputs:
+        referenceDateIso:
+          title: Reference Date (ISO-8601)
+          type: string
+          required: false
+          description: Evaluation date in YYYY-MM-DD format.
+        horizonDays:
+          title: Horizon Days
+          type: number
+          required: false
+          description: Lookahead window in days between 1 and 365.
+
+    - key: build_cfo_approval_memo
+      name: Build CFO Approval Memo
+      function: clausepulse-mcp-memo
+      actionVerb: CREATE
+      description: >
+        Generates an executive CFO and Legal procurement approval brief in
+        Atlassian Document Format (ADF) and Markdown.
+      inputs:
+        vendorId:
+          title: Vendor ID
+          type: string
+          required: true
+          description: Vendor ID or Jira procurement ticket key.
+        includeRedlines:
+          title: Include Redlines
+          type: boolean
+          required: false
+          description: Whether to attach counter-proposal redlines.
+
+    - key: query_vendor_graph
+      name: Query Vendor Graph
+      function: clausepulse-mcp-graph
+      actionVerb: GET
+      description: >
+        Queries the Teamwork Graph linking Vendor Entity, Active MSA/DPA
+        Confluence page, Jira/JSM Budget Approval Ticket, and Renewal Deadline.
+      inputs:
+        vendorId:
+          title: Vendor ID
+          type: string
+          required: false
+          description: Optional vendor identifier filter.
+        statusFilter:
+          title: Status Filter
+          type: string
+          required: false
+          description: Optional Jira ticket status filter.
+
   rovo:mcp:
     - key: clausepulse-mcp
-      name: ClausePulse Procurement MCP Server
-      description: >
-        Exposes deterministic contract risk auditing, renewal spend-at-risk
-        forecasting, CFO approval memo generation, and Teamwork Graph vendor
-        lineage queries over Model Context Protocol.
+      name: ClausePulse Procurement MCP
       tools:
-        - key: audit_contract_clauses
-          name: audit_contract_clauses
-          function: clausepulse-mcp-audit
-          description: >
-            Audits contract clause text against commercial playbook rules and returns
-            risk score, severity breakdown, policy violations, and redline counter-proposals.
-          inputSchema:
-            type: object
-            properties:
-              vendorName:
-                type: string
-              contractText:
-                type: string
-              annualSpendUsd:
-                type: number
-            required:
-              - vendorName
-              - contractText
-        - key: forecast_renewal_exposure
-          name: forecast_renewal_exposure
-          function: clausepulse-mcp-renewal
-          description: >
-            Calculates opt-out notice deadlines and annualized USD spend at risk
-            within 30, 60, and 90-day auto-renewal lock-in windows.
-          inputSchema:
-            type: object
-            properties:
-              referenceDateIso:
-                type: string
-              horizonDays:
-                type: number
-            required: []
-        - key: build_cfo_approval_memo
-          name: build_cfo_approval_memo
-          function: clausepulse-mcp-memo
-          description: >
-            Generates an executive CFO & Legal procurement approval brief in
-            Atlassian Document Format (ADF) and Markdown.
-          inputSchema:
-            type: object
-            properties:
-              vendorId:
-                type: string
-              includeRedlines:
-                type: boolean
-            required:
-              - vendorId
-        - key: query_vendor_graph
-          name: query_vendor_graph
-          function: clausepulse-mcp-graph
-          description: >
-            Queries the Teamwork Graph linking Vendor Entity, Active MSA/DPA
-            Confluence page, Jira/JSM Budget Approval Ticket, and Renewal Deadline.
-          inputSchema:
-            type: object
-            properties:
-              vendorId:
-                type: string
-              statusFilter:
-                type: string
-            required: []
+        - audit_contract_clauses
+        - forecast_renewal_exposure
+        - build_cfo_approval_memo
+        - query_vendor_graph
 
   function:
     - key: clausepulse-resolver
       handler: resolvers/index.handler
     - key: clausepulse-rovo-score
       handler: resolvers/index.rovoScoreClauseRisk
-    - key: clausepulse-rovo-renewal
+    - key: cp-rovo-renewal
       handler: resolvers/index.rovoCalculateRenewalDeadlines
     - key: clausepulse-rovo-brief
       handler: resolvers/index.rovoGenerateApprovalBrief
-    - key: clausepulse-rovo-compare
+    - key: cp-rovo-compare
       handler: resolvers/index.rovoCompareVendorTerms
     - key: clausepulse-mcp-audit
       handler: resolvers/index.mcpAuditContractClauses
@@ -222,6 +242,10 @@ permissions:
     - read:me
 
 app:
+  description: >
+    Deterministic contract renewal, clause risk scoring, CFO/Legal approval
+    brief generation, and Teamwork Graph vendor lineage copilot for Jira
+    Service Management and Confluence.
   runtime:
     name: nodejs24.x
   id: ari:cloud:ecosystem::app/00000000-0000-4000-8000-000000000001

@@ -21,9 +21,11 @@ describe('Forge manifest.yml integrity', () => {
     expect(panels[0].resolver.function).toBe('clausepulse-resolver');
   });
 
-  it('declares rovo:agent referencing all 4 rovo:action modules', () => {
+  it('declares rovo:agent referencing all 4 Rovo action modules', () => {
     const agent = doc.modules['rovo:agent'][0];
     expect(agent.key).toBe('clausepulse-copilot');
+    expect(agent.name).toBe('ClausePulse Legal Copilot');
+    expect(agent.name.length).toBeLessThanOrEqual(30);
     expect(agent.actions).toEqual([
       'scoreClauseRisk',
       'calculateRenewalDeadlines',
@@ -31,29 +33,36 @@ describe('Forge manifest.yml integrity', () => {
       'compareVendorTerms'
     ]);
 
-    const actionKeys = doc.modules['rovo:action'].map((a: any) => a.key);
-    expect(actionKeys).toEqual(agent.actions);
+    const actionKeys = new Set(doc.modules.action.map((a: any) => a.key));
+    for (const ref of agent.actions) {
+      expect(actionKeys.has(ref)).toBe(true);
+    }
   });
 
-  it('declares rovo:mcp with 4 strictly typed procurement tools', () => {
+  it('declares rovo:mcp referencing 4 strictly typed procurement action tools', () => {
     const mcp = doc.modules['rovo:mcp'][0];
     expect(mcp.key).toBe('clausepulse-mcp');
-    const toolNames = mcp.tools.map((t: any) => t.name);
-    expect(toolNames).toEqual([
+    expect(mcp.name.length).toBeLessThanOrEqual(30);
+    expect(mcp.tools).toEqual([
       'audit_contract_clauses',
       'forecast_renewal_exposure',
       'build_cfo_approval_memo',
       'query_vendor_graph'
     ]);
+
+    const actionKeys = new Set(doc.modules.action.map((a: any) => a.key));
+    for (const toolKey of mcp.tools) {
+      expect(actionKeys.has(toolKey)).toBe(true);
+    }
   });
 
-  it('maps every declared module function key to modules.function', () => {
+  it('maps every declared module function key to modules.function within 23-char Forge limit', () => {
     const declaredFunctions = new Set(doc.modules.function.map((f: any) => f.key));
-    for (const action of doc.modules['rovo:action']) {
-      expect(declaredFunctions.has(action.function)).toBe(true);
+    for (const fn of doc.modules.function) {
+      expect(fn.key.length).toBeLessThanOrEqual(23);
     }
-    for (const tool of doc.modules['rovo:mcp'][0].tools) {
-      expect(declaredFunctions.has(tool.function)).toBe(true);
+    for (const action of doc.modules.action) {
+      expect(declaredFunctions.has(action.function)).toBe(true);
     }
     expect(declaredFunctions.has(doc.modules['jira:issuePanel'][0].resolver.function)).toBe(true);
   });

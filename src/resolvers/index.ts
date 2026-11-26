@@ -1,5 +1,5 @@
 import { DEMO_VENDOR_PORTFOLIO, queryVendorGraph } from '../graph/vendorGraph.js';
-import { executeMcpTool } from '../mcp/procurementTools.js';
+import { executeMcpTool, handleMcpJsonRpc } from '../mcp/procurementTools.js';
 import {
   handleCalculateRenewalDeadlines,
   handleCompareVendorTerms,
@@ -79,18 +79,19 @@ export async function buildWorkbenchState(
  * Forge Custom UI resolver entrypoint.
  * Routes UI actions to the deterministic ClausePulse business-ops engine.
  */
-export async function handler(request: {
+export async function handler(request?: {
   action?: string;
   payload?: Record<string, unknown>;
   context?: { extension?: { issue?: { key?: string } } };
 }): Promise<unknown> {
-  const action = request.action ?? 'getWorkbenchState';
-  const payload = request.payload ?? {};
+  const req = request ?? {};
+  const action = req.action ?? 'getWorkbenchState';
+  const payload = req.payload ?? {};
 
   switch (action) {
     case 'getWorkbenchState':
       return buildWorkbenchState({
-        issueKey: request.context?.extension?.issue?.key,
+        issueKey: req.context?.extension?.issue?.key,
         referenceDateIso: payload.referenceDateIso as string | undefined,
         horizonDays: payload.horizonDays as number | undefined
       });
@@ -116,48 +117,54 @@ export async function handler(request: {
 }
 
 // Rovo Action Handlers (declared in manifest.yml)
-export async function rovoScoreClauseRisk(payload: {
+export async function rovoScoreClauseRisk(payload?: {
   contractText: string;
   vendorName?: string;
   annualSpendUsd?: number;
 }) {
-  return handleScoreClauseRisk(payload);
+  return handleScoreClauseRisk(payload ?? ({} as { contractText: string }));
 }
 
-export async function rovoCalculateRenewalDeadlines(payload: {
+export async function rovoCalculateRenewalDeadlines(payload?: {
   referenceDateIso?: string;
   horizonDays?: number;
 }) {
-  return handleCalculateRenewalDeadlines(payload);
+  return handleCalculateRenewalDeadlines(payload ?? {});
 }
 
-export async function rovoGenerateApprovalBrief(payload: {
+export async function rovoGenerateApprovalBrief(payload?: {
   vendorId: string;
   includeRedlines?: boolean;
 }) {
-  return handleGenerateApprovalBrief(payload);
+  return handleGenerateApprovalBrief(payload ?? ({} as { vendorId: string }));
 }
 
-export async function rovoCompareVendorTerms(payload: {
+export async function rovoCompareVendorTerms(payload?: {
   primaryVendorId: string;
   secondaryVendorId: string;
 }) {
-  return handleCompareVendorTerms(payload);
+  return handleCompareVendorTerms(
+    payload ?? ({} as { primaryVendorId: string; secondaryVendorId: string })
+  );
 }
 
 // MCP Tool Handlers (declared in manifest.yml)
-export async function mcpAuditContractClauses(args: Record<string, unknown>) {
-  return executeMcpTool('audit_contract_clauses', args);
+export async function mcpAuditContractClauses(args?: Record<string, unknown>) {
+  return executeMcpTool('audit_contract_clauses', args ?? {});
 }
 
-export async function mcpForecastRenewalExposure(args: Record<string, unknown>) {
-  return executeMcpTool('forecast_renewal_exposure', args);
+export async function mcpForecastRenewalExposure(args?: Record<string, unknown>) {
+  return executeMcpTool('forecast_renewal_exposure', args ?? {});
 }
 
-export async function mcpBuildCfoApprovalMemo(args: Record<string, unknown>) {
-  return executeMcpTool('build_cfo_approval_memo', args);
+export async function mcpBuildCfoApprovalMemo(args?: Record<string, unknown>) {
+  return executeMcpTool('build_cfo_approval_memo', args ?? {});
 }
 
-export async function mcpQueryVendorGraph(args: Record<string, unknown>) {
-  return executeMcpTool('query_vendor_graph', args);
+export async function mcpQueryVendorGraph(args?: Record<string, unknown>) {
+  return executeMcpTool('query_vendor_graph', args ?? {});
+}
+
+export async function mcpJsonRpcHandler(request: unknown) {
+  return handleMcpJsonRpc(request);
 }
