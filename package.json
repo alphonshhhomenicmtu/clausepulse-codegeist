@@ -1,0 +1,27 @@
+{
+  "name": "clausepulse",
+  "version": "1.0.0",
+  "description": "ClausePulse: Atlassian Forge + Rovo + MCP + Teamwork Graph contract renewal, clause risk, and vendor procurement approval copilot for Business Teams.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "vite build --config static/panel/vite.config.ts --base=./",
+    "dev:ui": "vite --config static/panel/vite.config.ts"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8",
+    "yaml": "^2.6.1"
+  }
+}

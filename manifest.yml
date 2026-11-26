@@ -1,0 +1,227 @@
+modules:
+  jira:issuePanel:
+    - key: clausepulse-procurement-panel
+      resource: clausepulse-panel
+      resolver:
+        function: clausepulse-resolver
+      title: ClausePulse Procurement & Renewal Workbench
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+
+  rovo:agent:
+    - key: clausepulse-copilot
+      name: ClausePulse Procurement & Legal Copilot
+      description: >
+        Contract renewal, clause risk, and vendor procurement approval copilot
+        for Legal, Finance, and RevOps teams across Jira Service Management and Confluence.
+      prompt: >
+        You are ClausePulse, a deterministic Procurement, Legal, and RevOps contract
+        analyst operating inside Jira Service Management and Confluence.
+        Always ground your analysis in the company commercial playbook and Teamwork Graph
+        vendor lineage. When asked to evaluate a vendor contract or renewal:
+        1. Run scoreClauseRisk to detect auto-renewal traps, uncapped liability,
+           price-uplift clauses, DPA/GDPR/SOC2 compliance gaps, and payment-term deviations.
+        2. Run calculateRenewalDeadlines to quantify opt-out notice deadlines and
+           annualized spend at risk within 30/60/90-day windows.
+        3. Use compareVendorTerms when comparing incumbent vs. challenger vendor terms.
+        4. Run generateApprovalBrief to produce an executive CFO/Legal signoff memo
+           in Atlassian Document Format (ADF) and Markdown.
+        Never invent contract terms or dollar figures not present in the source data.
+      conversationStarters:
+        - Audit this vendor MSA for auto-renewal traps and uncapped liability
+        - Calculate annualized spend at risk for renewals closing in the next 60 days
+        - Generate a CFO & Legal signoff brief for our Snowflake renewal ticket
+        - Compare incumbent vendor terms against our standard Net-45 playbook
+      actions:
+        - scoreClauseRisk
+        - calculateRenewalDeadlines
+        - generateApprovalBrief
+        - compareVendorTerms
+
+  rovo:action:
+    - key: scoreClauseRisk
+      name: Score Contract Clause Risk
+      function: clausepulse-rovo-score
+      actionVerb: GET
+      description: >
+        Scores commercial contract clauses against company playbook rules for
+        auto-renewal traps, liability caps, price-uplift caps, DPA/SOC2 gaps, and payment terms.
+      inputs:
+        contractText:
+          title: Contract Text
+          type: string
+          required: true
+          description: Raw or extracted MSA/DPA/Order Form clause text to audit.
+        vendorName:
+          title: Vendor Name
+          type: string
+          required: false
+          description: Canonical vendor name for playbook overrides.
+        annualSpendUsd:
+          title: Annual Spend (USD)
+          type: number
+          required: false
+          description: Annualized contract value in USD for materiality weighting.
+
+    - key: calculateRenewalDeadlines
+      name: Calculate Renewal Deadlines & Exposure
+      function: clausepulse-rovo-renewal
+      actionVerb: GET
+      description: >
+        Computes exact opt-out notice deadlines, lock-in windows (30/60/90 days),
+        and annualized spend exposure across a vendor contract portfolio.
+      inputs:
+        referenceDateIso:
+          title: Reference Date (ISO-8601)
+          type: string
+          required: false
+          description: Evaluation date in YYYY-MM-DD format; defaults to current UTC date.
+        horizonDays:
+          title: Horizon Days
+          type: number
+          required: false
+          description: Lookahead window in days (e.g. 30, 60, 90).
+
+    - key: generateApprovalBrief
+      name: Generate CFO & Legal Approval Brief
+      function: clausepulse-rovo-brief
+      actionVerb: CREATE
+      description: >
+        Builds a structured Executive CFO and Legal Signoff Brief in both ADF
+        and Markdown formats, including risk score, opt-out deadline, and redlines.
+      inputs:
+        vendorId:
+          title: Vendor ID
+          type: string
+          required: true
+          description: Vendor identifier from the Teamwork Graph or Jira procurement ticket.
+        includeRedlines:
+          title: Include Redlines
+          type: boolean
+          required: false
+          description: Whether to attach suggested counter-proposal redline language.
+
+    - key: compareVendorTerms
+      name: Compare Vendor Commercial Terms
+      function: clausepulse-rovo-compare
+      actionVerb: GET
+      description: >
+        Compares two vendor contracts or proposals side-by-side on liability cap,
+        price uplift, auto-renewal notice window, DPA coverage, and payment terms.
+      inputs:
+        primaryVendorId:
+          title: Primary Vendor ID
+          type: string
+          required: true
+          description: Incumbent or primary vendor identifier.
+        secondaryVendorId:
+          title: Secondary Vendor ID
+          type: string
+          required: true
+          description: Challenger or comparison vendor identifier.
+
+  rovo:mcp:
+    - key: clausepulse-mcp
+      name: ClausePulse Procurement MCP Server
+      description: >
+        Exposes deterministic contract risk auditing, renewal spend-at-risk
+        forecasting, CFO approval memo generation, and Teamwork Graph vendor
+        lineage queries over Model Context Protocol.
+      tools:
+        - key: audit_contract_clauses
+          name: audit_contract_clauses
+          function: clausepulse-mcp-audit
+          description: >
+            Audits contract clause text against commercial playbook rules and returns
+            risk score, severity breakdown, policy violations, and redline counter-proposals.
+          inputSchema:
+            type: object
+            properties:
+              vendorName:
+                type: string
+              contractText:
+                type: string
+              annualSpendUsd:
+                type: number
+            required:
+              - vendorName
+              - contractText
+        - key: forecast_renewal_exposure
+          name: forecast_renewal_exposure
+          function: clausepulse-mcp-renewal
+          description: >
+            Calculates opt-out notice deadlines and annualized USD spend at risk
+            within 30, 60, and 90-day auto-renewal lock-in windows.
+          inputSchema:
+            type: object
+            properties:
+              referenceDateIso:
+                type: string
+              horizonDays:
+                type: number
+            required: []
+        - key: build_cfo_approval_memo
+          name: build_cfo_approval_memo
+          function: clausepulse-mcp-memo
+          description: >
+            Generates an executive CFO & Legal procurement approval brief in
+            Atlassian Document Format (ADF) and Markdown.
+          inputSchema:
+            type: object
+            properties:
+              vendorId:
+                type: string
+              includeRedlines:
+                type: boolean
+            required:
+              - vendorId
+        - key: query_vendor_graph
+          name: query_vendor_graph
+          function: clausepulse-mcp-graph
+          description: >
+            Queries the Teamwork Graph linking Vendor Entity, Active MSA/DPA
+            Confluence page, Jira/JSM Budget Approval Ticket, and Renewal Deadline.
+          inputSchema:
+            type: object
+            properties:
+              vendorId:
+                type: string
+              statusFilter:
+                type: string
+            required: []
+
+  function:
+    - key: clausepulse-resolver
+      handler: resolvers/index.handler
+    - key: clausepulse-rovo-score
+      handler: resolvers/index.rovoScoreClauseRisk
+    - key: clausepulse-rovo-renewal
+      handler: resolvers/index.rovoCalculateRenewalDeadlines
+    - key: clausepulse-rovo-brief
+      handler: resolvers/index.rovoGenerateApprovalBrief
+    - key: clausepulse-rovo-compare
+      handler: resolvers/index.rovoCompareVendorTerms
+    - key: clausepulse-mcp-audit
+      handler: resolvers/index.mcpAuditContractClauses
+    - key: clausepulse-mcp-renewal
+      handler: resolvers/index.mcpForecastRenewalExposure
+    - key: clausepulse-mcp-memo
+      handler: resolvers/index.mcpBuildCfoApprovalMemo
+    - key: clausepulse-mcp-graph
+      handler: resolvers/index.mcpQueryVendorGraph
+
+resources:
+  - key: clausepulse-panel
+    path: static/panel/dist
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - read:confluence-content.all
+    - read:graph:jira
+    - read:me
+
+app:
+  runtime:
+    name: nodejs24.x
+  id: ari:cloud:ecosystem::app/00000000-0000-4000-8000-000000000001
