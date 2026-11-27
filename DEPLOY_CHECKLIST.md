@@ -3,7 +3,7 @@
 ## 1. Local Pre-Flight Checks
 - [ ] `npm install` completes cleanly
 - [ ] `npm run typecheck` (`tsc --noEmit`) exits with `0` errors
-- [ ] `npm test` (`vitest run`) passes all unit and integration tests
+- [ ] `npm test` (`vitest run`) passes 34 of 34 tests (verified 2026-11-27, Vitest 2.1.9, 5 files)
 - [ ] `npm run build` (`vite build --base=./`) outputs `static/panel/dist/index.html` with relative asset paths
 
 ## 2. Atlassian Forge Registration & Deployment

@@ -4,3 +4,5 @@ dist/
 .DS_Store
 *.log
 .env
+
+docs/demo-1080p.mp4
