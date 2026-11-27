@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ClausePulse Devpost thumbnail</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 1200px; height: 800px; overflow: hidden; background: #0b1020; }
+    body { font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: #f8fafc; }
+    .stage { box-sizing: border-box; width: 1200px; height: 800px; padding: 36px 44px 32px; display: flex; flex-direction: column; }
+    .kicker { font-size: 15px; letter-spacing: 0.16em; text-transform: uppercase; color: #93c5fd; font-weight: 700; }
+    h1 { margin: 10px 0 0; font-size: 52px; line-height: 1; font-weight: 750; letter-spacing: -0.03em; }
+    .sub { margin-top: 12px; font-size: 22px; color: #dbe7f5; }
+    .pills { margin-top: 16px; display: flex; gap: 10px; }
+    .pill { background: #152038; border: 1px solid #334155; border-radius: 999px; padding: 7px 14px; font-size: 15px; color: #e2e8f0; }
+    .kpis { margin-top: 26px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .kpi { background: #121a2e; border: 1px solid #334155; border-radius: 16px; padding: 16px 16px 14px; }
+    .kpi b { display: block; font-size: 34px; line-height: 1; letter-spacing: -0.03em; }
+    .kpi span { display: block; margin-top: 8px; font-size: 15px; color: #cbd5e1; }
+    .risk { color: #fb7185; }
+    .warn { color: #fb923c; }
+    .watch { color: #60a5fa; }
+    .card { margin-top: 18px; background: #121a2e; border: 1px solid #334155; border-radius: 18px; padding: 16px 18px 8px; }
+    .card h2 { margin: 0 0 12px; font-size: 16px; color: #bfdbfe; font-weight: 650; }
+    .line { display: flex; justify-content: space-between; align-items: center; background: #18233c; border-radius: 12px; padding: 9px 12px; margin-bottom: 8px; font-size: 16px; }
+    .badge { border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+    .crit { background: #7f1d1d; color: #fecaca; }
+    .high { background: #7c2d12; color: #ffedd5; }
+    .mod { background: #1e3a5f; color: #dbeafe; }
+    .low { background: #14532d; color: #bbf7d0; }
+    .foot { margin-top: 12px; font-size: 15px; line-height: 1.45; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <!--
+    forecastRenewalPortfolio(DEMO_VENDOR_PORTFOLIO, "2026-11-27", 90):
+    5 vendors, portfolio 689000, at risk 635000, within30 318000, within60 185000, within90 132000.
+    Snowflake auditContractClauses: riskScore 78, CRITICAL, BLOCK_UNTIL_REDLINED, 4 findings.
+    Vitest 5 files, 34 passed. Package does not depend on @forge/api.
+  -->
+  <div class="stage">
+    <div class="kicker">Atlassian Codegeist 2026 · Business teams</div>
+    <h1>ClausePulse</h1>
+    <div class="sub">Clause risk and renewal exposure on a Jira issue panel.</div>
+    <div class="pills">
+      <div class="pill">Demo portfolio · reference 2026-11-27</div>
+      <div class="pill">5 vendor MSAs · 90-day window</div>
+      <div class="pill">Vitest 34 passed</div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><b>$689,000</b><span>Portfolio annual spend</span></div>
+      <div class="kpi"><b class="risk">$635,000</b><span>Spend at risk, 90 days</span></div>
+      <div class="kpi"><b class="warn">$318,000</b><span>Critical, 30 days or less</span></div>
+      <div class="kpi"><b class="watch">$185,000</b><span>Warning, 31-60 days</span></div>
+    </div>
+    <div class="card">
+      <h2>Snowflake Enterprise · 78/100 · BLOCK_UNTIL_REDLINED · 4 findings</h2>
+      <div class="line"><span>AUTO_RENEWAL_TRAP</span><span class="badge crit">CRITICAL</span></div>
+      <div class="line"><span>UNCAPPED_LIABILITY</span><span class="badge high">HIGH</span></div>
+      <div class="line"><span>PRICE_UPLIFT_EXCESS</span><span class="badge high">HIGH</span></div>
+      <div class="line"><span>PAYMENT_TERM_DEVIATION</span><span class="badge low">LOW</span></div>
+    </div>
+    <div class="foot" style="margin-top:auto">
+      Dollar figures come from the demo vendor portfolio, not a live Jira issue. In-app vendor graph only.
+      Forge nodejs24.x · manifest check 0 errors / 0 warnings.
+    </div>
+  </div>
+</body>
+</html>
