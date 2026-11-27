@@ -30,7 +30,7 @@ The TypeScript engine runs inside Atlassian Forge (`nodejs24.x`). This repo does
 - **Interactive workbench (GitHub Pages):** [https://alphonshhhomenicmtu.github.io/clausepulse-codegeist/](https://alphonshhhomenicmtu.github.io/clausepulse-codegeist/) (HTTP 200 on 2026-11-27)
 - **8-slide architecture deck (PDF):** [https://alphonshhhomenicmtu.github.io/clausepulse-codegeist/clausepulse-deck.pdf](https://alphonshhhomenicmtu.github.io/clausepulse-codegeist/clausepulse-deck.pdf) (HTTP 200 on 2026-11-27; local [`docs/clausepulse-deck.pdf`](./docs/clausepulse-deck.pdf), 555,919 bytes)
 - **Repository:** [https://github.com/alphonshhhomenicmtu/clausepulse-codegeist](https://github.com/alphonshhhomenicmtu/clausepulse-codegeist)
-- **Narrated demo, local Devpost upload:** [`docs/demo-narrated-1080p.mp4`](./docs/demo-narrated-1080p.mp4). H.264 + AAC stereo, 68.3 s, 5,169,096 bytes, probed 2026-11-27. The same filename on GitHub Pages returns HTTP 404. Upload this file on the Devpost form. Codegeist still needs a public video under 5 minutes. An earlier local cut, `docs/demo-1080p.mp4` (66.4 s, 4,892,902 bytes), is gitignored and is not the upload.
+- **Narrated demo:** [`docs/demo-narrated-1080p.mp4`](./docs/demo-narrated-1080p.mp4). H.264 + AAC stereo, 68.3 s, 5,169,096 bytes, probed 2026-11-27. Public YouTube: https://www.youtube.com/watch?v=SzF7x9js7JE. The same filename on GitHub Pages returns HTTP 404. An earlier local cut, `docs/demo-1080p.mp4` (66.4 s, 4,892,902 bytes), is gitignored and is not the upload.
 
 ![ClausePulse Workbench Preview](./docs/screenshot-preview.png)
 
