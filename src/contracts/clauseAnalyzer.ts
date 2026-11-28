@@ -38,10 +38,11 @@ function classifyRecommendation(
   findings: ClauseFinding[]
 ): ApprovalRecommendation {
   const hasCritical = findings.some((f) => f.severity === 'CRITICAL');
+  const missingLiabilityCap = findings.some((f) => f.ruleId === 'MISSING_LIABILITY_CAP');
   if (hasCritical || score >= 65) {
     return 'BLOCK_UNTIL_REDLINED';
   }
-  if (score >= 30) {
+  if (score >= 30 || missingLiabilityCap) {
     return 'FINANCE_LEGAL_REVIEW';
   }
   return 'STANDARD_APPROVAL';
@@ -121,7 +122,7 @@ export function auditContractClauses(
     /(uncapped\s+liability|unlimited\s+liability|without\s+limitation\s+of\s+liability)/i
   );
   const lowCapMonthsMatch = text.match(
-    /(?:aggregate\s+liability|liability\s+shall\s+not\s+exceed)[^.]{0,80}?(\d{1,2})\s*months?\s*(?:of\s+)?fees/i
+    /(?:aggregate\s+liability|liability\s+shall\s+not\s+exceed|liability\s+(?:is\s+)?capped\s+at)[^.]{0,80}?(\d{1,2})\s*months?\s*(?:of\s+)?fees/i
   );
   const lowCapFixedMatch = text.match(
     /(?:aggregate\s+liability|liability\s+shall\s+not\s+exceed)[^.]{0,80}?\$([0-9,]+)/i
@@ -186,8 +187,24 @@ export function auditContractClauses(
     } else {
       passedChecks.push('Liability cap meets commercial threshold.');
     }
+  } else if (lowCapMonthsMatch) {
+    passedChecks.push(
+      `Liability cap clause aligns with ${playbook.minLiabilityCapMonths}-month baseline.`,
+    );
   } else {
-    passedChecks.push('Liability cap clause aligns with 12-month baseline.');
+    findings.push({
+      ruleId: 'MISSING_LIABILITY_CAP',
+      clauseCategory: 'Limitation of Liability',
+      severity: 'HIGH',
+      matchedExcerpt: 'No liability cap clause found in the contract text.',
+      policyRule: `A mutual liability cap of at least ${playbook.minLiabilityCapMonths} months of fees is required. Absence is not treated as compliance.`,
+      riskScorePoints: 32,
+      rationale:
+        'The contract does not state a liability cap. A missing cap is not a 12-month baseline.',
+      suggestedRedline:
+        'Except for confidentiality breaches or willful misconduct, each party’s aggregate liability shall not exceed 12 months of fees paid or payable under the applicable Order Form.',
+      businessImpact: 'Requires Legal review before standard procurement approval.'
+    });
   }
 
   // 3. Price uplift check

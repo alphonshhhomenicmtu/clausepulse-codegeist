@@ -8,6 +8,7 @@ export type ApprovalRecommendation =
 export type ClauseRuleId =
   | 'AUTO_RENEWAL_TRAP'
   | 'UNCAPPED_LIABILITY'
+  | 'MISSING_LIABILITY_CAP'
   | 'PRICE_UPLIFT_EXCESS'
   | 'COMPLIANCE_GAP'
   | 'PAYMENT_TERM_DEVIATION';

@@ -93,4 +93,22 @@ describe('ClausePulse deterministic clauseAnalyzer', () => {
     expect(result.approvalRecommendation).toBe('STANDARD_APPROVAL');
     expect(result.findings).toHaveLength(0);
   });
+
+  it('flags a liability-free contract instead of calling the missing cap compliant', () => {
+    const result = auditContractClauses({
+      vendorName: 'NoCap Vendor',
+      annualSpendUsd: 250000,
+      contractText:
+        'Renews only by mutual written agreement. Price increase capped at 3%. Invoices payable Net-45. Executed DPA and SOC 2 Type II incorporated.',
+    });
+
+    const missing = result.findings.find((finding) => finding.ruleId === 'MISSING_LIABILITY_CAP');
+    expect(missing).toBeDefined();
+    expect(missing?.severity).toBe('HIGH');
+    expect(result.riskScore).toBeGreaterThan(0);
+    expect(result.riskTier).not.toBe('LOW');
+    expect(result.approvalRecommendation).not.toBe('STANDARD_APPROVAL');
+    expect(result.approvalRecommendation).toBe('FINANCE_LEGAL_REVIEW');
+    expect(result.passedChecks.join(' ')).not.toMatch(/aligns with 12-month baseline/);
+  });
 });
