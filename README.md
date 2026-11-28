@@ -39,7 +39,7 @@ The TypeScript engine runs inside Atlassian Forge (`nodejs24.x`). This repo does
 ```bash
 npm install
 npm run typecheck
-npm test          # Vitest. Verified 2026-11-28: 5 files, 34 passed, 34 total (Vitest 2.1.9)
+npm test          # Vitest. Verified 2026-11-28: 5 files, 35 passed, 35 total (Vitest 2.1.9)
 npm run build
 ```
 
