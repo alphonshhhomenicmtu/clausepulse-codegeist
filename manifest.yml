@@ -12,23 +12,29 @@ modules:
       name: ClausePulse Legal Copilot
       description: >
         Contract renewal, clause risk, and vendor procurement approval copilot
-        for Legal, Finance, and RevOps teams across Jira Service Management and Confluence.
+        for Legal, Finance, and RevOps teams across Jira Service Management and
+        Confluence.
       prompt: >
-        You are ClausePulse, a deterministic Procurement, Legal, and RevOps contract
-        analyst operating inside Jira Service Management and Confluence.
-        Always ground your analysis in the company commercial playbook and Teamwork Graph
-        vendor lineage. When asked to evaluate a vendor contract or renewal:
-        1. Run scoreClauseRisk to detect auto-renewal traps, uncapped liability,
+        You are ClausePulse, a deterministic Procurement, Legal, and RevOps
+        contract analyst operating inside Jira Service Management and
+        Confluence. Always ground your analysis in the company commercial
+        playbook and Teamwork Graph vendor lineage. When asked to evaluate a
+        vendor contract or renewal: 1. Run scoreClauseRisk to detect
+        auto-renewal traps, uncapped liability,
            price-uplift clauses, DPA/GDPR/SOC2 compliance gaps, and payment-term deviations.
-        2. Run calculateRenewalDeadlines to quantify opt-out notice deadlines and
+        2. Run calculateRenewalDeadlines to quantify opt-out notice deadlines
+        and
            annualized spend at risk within 30/60/90-day windows.
-        3. Use compareVendorTerms when comparing incumbent vs. challenger vendor terms.
-        4. Run generateApprovalBrief to produce an executive CFO/Legal signoff memo
+        3. Use compareVendorTerms when comparing incumbent vs. challenger vendor
+        terms. 4. Run generateApprovalBrief to produce an executive CFO/Legal
+        signoff memo
            in Atlassian Document Format (ADF) and Markdown.
-        Never invent contract terms or dollar figures not present in the source data.
+        Never invent contract terms or dollar figures not present in the source
+        data.
       conversationStarters:
         - Audit this vendor MSA for auto-renewal traps and uncapped liability
-        - Calculate annualized spend at risk for renewals closing in the next 60 days
+        - Calculate annualized spend at risk for renewals closing in the next 60
+          days
         - Generate a CFO & Legal signoff brief for our Snowflake renewal ticket
         - Compare incumbent vendor terms against our standard Net-45 playbook
       actions:
@@ -44,7 +50,8 @@ modules:
       actionVerb: GET
       description: >
         Scores commercial contract clauses against company playbook rules for
-        auto-renewal traps, liability caps, price-uplift caps, DPA/SOC2 gaps, and payment terms.
+        auto-renewal traps, liability caps, price-uplift caps, DPA/SOC2 gaps,
+        and payment terms.
       inputs:
         contractText:
           title: Contract Text
@@ -67,8 +74,8 @@ modules:
       function: cp-rovo-renewal
       actionVerb: GET
       description: >
-        Computes exact opt-out notice deadlines, lock-in windows (30/60/90 days),
-        and annualized spend exposure across a vendor contract portfolio.
+        Computes exact opt-out notice deadlines, lock-in windows (30/60/90
+        days), and annualized spend exposure across a vendor contract portfolio.
       inputs:
         referenceDateIso:
           title: Reference Date (ISO-8601)
@@ -87,7 +94,8 @@ modules:
       actionVerb: CREATE
       description: >
         Builds a structured Executive CFO and Legal Signoff Brief in both ADF
-        and Markdown formats, including risk score, opt-out deadline, and redlines.
+        and Markdown formats, including risk score, opt-out deadline, and
+        redlines.
       inputs:
         vendorId:
           title: Vendor ID
@@ -105,8 +113,9 @@ modules:
       function: cp-rovo-compare
       actionVerb: GET
       description: >
-        Compares two vendor contracts or proposals side-by-side on liability cap,
-        price uplift, auto-renewal notice window, DPA coverage, and payment terms.
+        Compares two vendor contracts or proposals side-by-side on liability
+        cap, price uplift, auto-renewal notice window, DPA coverage, and payment
+        terms.
       inputs:
         primaryVendorId:
           title: Primary Vendor ID
@@ -124,8 +133,9 @@ modules:
       function: clausepulse-mcp-audit
       actionVerb: GET
       description: >
-        Audits contract clause text against commercial playbook rules and returns
-        risk score, severity breakdown, policy violations, and redline counter-proposals.
+        Audits contract clause text against commercial playbook rules and
+        returns risk score, severity breakdown, policy violations, and redline
+        counter-proposals.
       inputs:
         vendorName:
           title: Vendor Name
@@ -244,8 +254,8 @@ permissions:
 app:
   description: >
     Deterministic contract renewal, clause risk scoring, CFO/Legal approval
-    brief generation, and Teamwork Graph vendor lineage copilot for Jira
-    Service Management and Confluence.
+    brief generation, and Teamwork Graph vendor lineage copilot for Jira Service
+    Management and Confluence.
   runtime:
     name: nodejs24.x
-  id: ari:cloud:ecosystem::app/00000000-0000-4000-8000-000000000001
+  id: ari:cloud:ecosystem::app/8194c438-04f7-403c-aebc-89b1250e8f52

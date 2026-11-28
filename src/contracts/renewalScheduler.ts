@@ -3,7 +3,7 @@ import type {
   RenewalPortfolioForecast,
   RenewalUrgencyBucket,
   VendorContractRecord
-} from '../types.js';
+} from '../types';
 
 const MS_PER_DAY = 86_400_000;
 

@@ -1,10 +1,10 @@
-import { queryVendorGraph } from '../graph/vendorGraph.js';
+import { queryVendorGraph } from '../graph/vendorGraph';
 import {
   assertSafePlainObject,
   handleCalculateRenewalDeadlines,
   handleGenerateApprovalBrief,
   handleScoreClauseRisk
-} from '../rovo/businessActions.js';
+} from '../rovo/businessActions';
 
 export const MCP_PROTOCOL_VERSION = '2025-03-26';
 

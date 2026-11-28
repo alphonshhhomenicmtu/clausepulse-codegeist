@@ -1,13 +1,13 @@
-import { DEMO_VENDOR_PORTFOLIO, queryVendorGraph } from '../graph/vendorGraph.js';
-import { executeMcpTool, handleMcpJsonRpc } from '../mcp/procurementTools.js';
+import { DEMO_VENDOR_PORTFOLIO, queryVendorGraph } from '../graph/vendorGraph';
+import { executeMcpTool, handleMcpJsonRpc } from '../mcp/procurementTools';
 import {
   handleCalculateRenewalDeadlines,
   handleCompareVendorTerms,
   handleGenerateApprovalBrief,
   handleScoreClauseRisk
-} from '../rovo/businessActions.js';
-import { auditContractClauses } from '../contracts/clauseAnalyzer.js';
-import type { VendorContractRecord } from '../types.js';
+} from '../rovo/businessActions';
+import { auditContractClauses } from '../contracts/clauseAnalyzer';
+import type { VendorContractRecord } from '../types';
 
 export interface ForgeApiAdapter {
   fetchJiraIssueContext?: (issueKey: string) => Promise<{

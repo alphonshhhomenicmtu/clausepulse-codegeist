@@ -1,10 +1,10 @@
-import { addUtcDays } from '../contracts/renewalScheduler.js';
+import { addUtcDays } from '../contracts/renewalScheduler';
 import type {
   TeamworkGraphEdge,
   TeamworkGraphNode,
   TeamworkGraphResult,
   VendorContractRecord
-} from '../types.js';
+} from '../types';
 
 /**
  * Deterministic SaaS procurement portfolio used for standalone demo mode

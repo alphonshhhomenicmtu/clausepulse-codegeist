@@ -1,6 +1,6 @@
-import { auditContractClauses } from '../contracts/clauseAnalyzer.js';
-import { addUtcDays, forecastRenewalPortfolio } from '../contracts/renewalScheduler.js';
-import { DEMO_VENDOR_PORTFOLIO, findVendorById } from '../graph/vendorGraph.js';
+import { auditContractClauses } from '../contracts/clauseAnalyzer';
+import { addUtcDays, forecastRenewalPortfolio } from '../contracts/renewalScheduler';
+import { DEMO_VENDOR_PORTFOLIO, findVendorById } from '../graph/vendorGraph';
 import type {
   AdfDocument,
   ApprovalBriefResult,
@@ -9,7 +9,7 @@ import type {
   VendorComparisonResult,
   VendorComparisonRow,
   VendorContractRecord
-} from '../types.js';
+} from '../types';
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 const MAX_PAYLOAD_BYTES = 65_536;

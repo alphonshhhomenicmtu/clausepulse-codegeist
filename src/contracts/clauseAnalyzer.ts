@@ -5,7 +5,7 @@ import type {
   ClauseFinding,
   PlaybookConfig,
   RiskTier
-} from '../types.js';
+} from '../types';
 
 export const DEFAULT_PLAYBOOK: PlaybookConfig = {
   maxAutoRenewalNoticeDays: 30,
