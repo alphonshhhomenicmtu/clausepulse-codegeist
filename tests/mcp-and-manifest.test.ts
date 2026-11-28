@@ -63,11 +63,6 @@ describe('Official @forge/manifest Full Validation (ClausePulse)', () => {
     });
 
     expect(parsed.app?.runtime?.name).toBe('nodejs24.x');
-    const agent = parsed.modules?.['rovo:agent']?.[0];
-    expect(agent?.name.length).toBeLessThanOrEqual(30);
-    for (const starter of agent?.conversationStarters ?? []) {
-      expect(starter.length).toBeLessThanOrEqual(85);
-    }
 
     const mcp = parsed.modules?.['rovo:mcp']?.[0];
     expect(mcp?.name.length).toBeLessThanOrEqual(30);

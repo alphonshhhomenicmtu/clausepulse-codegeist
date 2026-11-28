@@ -21,20 +21,14 @@ describe('Forge manifest.yml integrity', () => {
     expect(panels[0].resolver.function).toBe('clausepulse-resolver');
   });
 
-  it('declares rovo:agent referencing all 4 Rovo action modules', () => {
-    const agent = doc.modules['rovo:agent'][0];
-    expect(agent.key).toBe('clausepulse-copilot');
-    expect(agent.name).toBe('ClausePulse Legal Copilot');
-    expect(agent.name.length).toBeLessThanOrEqual(30);
-    expect(agent.actions).toEqual([
-      'scoreClauseRisk',
-      'calculateRenewalDeadlines',
-      'generateApprovalBrief',
-      'compareVendorTerms'
-    ]);
-
+  it('declares all 4 procurement MCP action modules with valid functions', () => {
     const actionKeys = new Set(doc.modules.action.map((a: any) => a.key));
-    for (const ref of agent.actions) {
+    for (const ref of [
+      'audit_contract_clauses',
+      'forecast_renewal_exposure',
+      'build_cfo_approval_memo',
+      'query_vendor_graph'
+    ]) {
       expect(actionKeys.has(ref)).toBe(true);
     }
   });
